@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscador de Repositorios GitHub</title>
+    <!-- Importamos Bootstrap para el diseño -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Buscador de Repositorios</h2>
+
+    <!-- Buscador -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-6 d-flex">
+            <input type="text" id="nombreUsuario" class="form-control me-2" placeholder="Introduce tu usuario de GitHub">
+            <button id="botonBuscar" class="btn btn-primary">Buscar</button>
+        </div>
+    </div>
+
+    <!-- Tabla de resultados (oculta al principio) -->
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered" id="tablaRepos" style="display: none;">
+            <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Followers (Watchers)</th>
+            </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+            <!-- Aquí se inyectarán los repositorios -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Importamos jQuery y Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Lógica de la aplicación con jQuery -->
+<script>
+    $(document).ready(function() {
+        $("#botonBuscar").click(function() {
+            var usuario = $("#nombreUsuario").val();
+
+            if(usuario == "") {
+                alert("Por favor, introduce un nombre de usuario.");
+                return;
+            }
+
+            // Vaciamos la tabla anterior
+            $("#cuerpoTabla").empty();
+
+            var urlApi = "https://api.github.com/users/" + usuario + "/repos";
+
+            // Petición a la API de GitHub v3
+            $.get(urlApi, function(data) {
+                // Mostramos la tabla
+                $("#tablaRepos").show();
+
+                if(data.length == 0) {
+                    alert("Este usuario no tiene repositorios públicos.");
+                } else {
+                    $.each(data, function(index, repo) {
+                        var descripcion = repo.description;
+                        if(descripcion == null) {
+                            descripcion = "Sin descripción";
+                        }
+
+                        var fila = "<tr>" +
+                            "<td><a href='" + repo.html_url + "' target='_blank'>" + repo.name + "</a></td>" +
+                            "<td>" + descripcion + "</td>" +
+                            "<td>" + repo.watchers_count + "</td>" +
+                            "</tr>";
+
+                        $("#cuerpoTabla").append(fila);
+                    });
+                }
+            }).fail(function() {
+                alert("Error: Usuario no encontrado en GitHub.");
+            });
+        });
+    });
+</script>
+</body>
+</html>
